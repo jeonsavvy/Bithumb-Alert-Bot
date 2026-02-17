@@ -1,5 +1,5 @@
 """
-빗썸 KRW 마켓 거래량 모니터링 메인 스크립트
+빗썸얼러트봇 메인 스크립트
 5분봉 거래량이 20 SMA 대비 5배 이상일 때 디스코드 알림
 """
 import json
@@ -20,7 +20,7 @@ from discord_webhook import DiscordWebhook
 load_dotenv()
 
 # 로그 파일 경로 설정
-log_path = os.getenv('LOG_FILE', 'bithumb_monitor.log')
+log_path = os.getenv('LOG_FILE', 'bithumb_alert_bot.log')
 log_file = Path(log_path)
 
 # 로그 디렉토리가 없으면 생성
@@ -39,8 +39,8 @@ logger = logging.getLogger(__name__)
 logger.info(f"로그 파일 저장 위치: {log_file.absolute()}")
 
 
-class BithumbVolumeMonitor:
-    """빗썸 거래량 모니터링 클래스"""
+class BithumbAlertBot:
+    """빗썸얼러트봇 클래스"""
 
     def __init__(
         self,
@@ -254,7 +254,7 @@ class BithumbVolumeMonitor:
 
     def run_continuous(self):
         """지속적으로 모니터링 실행"""
-        logger.info("빗썸 거래량 모니터링 시작")
+        logger.info("빗썸얼러트봇 시작")
         logger.info(f"체크 간격: {self.check_interval}초 ({self.check_interval / 60:.1f}분)")
         logger.info(f"캔들 기간: {self.candle_interval}")
 
@@ -393,7 +393,7 @@ def main():
         logger.error("설정 검증 실패. 프로그램을 종료합니다.")
         return
 
-    monitor = BithumbVolumeMonitor(
+    monitor = BithumbAlertBot(
         webhook_url=webhook_url,
         check_interval=check_interval,
         volume_multiplier=volume_multiplier,

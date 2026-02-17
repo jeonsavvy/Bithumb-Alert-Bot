@@ -26,7 +26,7 @@ class BithumbAPI:
         """
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'BithumbVolumeAlert/1.0'
+            'User-Agent': 'BithumbAlertBot/1.0'
         })
         self.timeout = timeout
         self.max_retries = max_retries

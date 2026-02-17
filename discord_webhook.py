@@ -120,7 +120,7 @@ class DiscordWebhook:
                 }
             ],
             "footer": {
-                "text": "빗썸 거래량 모니터링"
+                "text": "빗썸얼러트봇"
             },
             "timestamp": datetime.utcnow().isoformat()
         }
@@ -166,7 +166,7 @@ class DiscordWebhook:
             return False
         
         payload = {
-            "content": "✅ 빗썸 거래량 모니터링 시스템이 시작되었습니다!"
+            "content": "✅ 빗썸얼러트봇이 시작되었습니다!"
         }
         
         try:
@@ -188,4 +188,3 @@ class DiscordWebhook:
         except Exception as e:
             logger.error(f"테스트 메시지 전송 실패: {e}", exc_info=True)
             return False
-

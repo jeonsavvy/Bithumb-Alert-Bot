@@ -1,6 +1,6 @@
-# Bithumb Volume Alert
+# Bithumb Alert Bot
 
-빗썸 KRW 마켓을 순회하면서 캔들 거래량이 평균 대비 급증한 종목을 Discord로 알리는 Python 모니터입니다.
+빗썸얼러트봇은 KRW 마켓을 순회하면서 캔들 거래량이 평균 대비 급증한 종목을 Discord로 알리는 Python 모니터입니다.
 
 ---
 
@@ -75,7 +75,7 @@ nohup python main.py > monitor.log 2>&1 &
 | `SMA_PERIOD` | `20` | 거래량 SMA 기간 |
 | `CANDLE_INTERVAL` | `5m` | 캔들 간격 (`1m,3m,5m,15m,30m,1h,4h,1d`) |
 | `RUN_ONCE` | `false` | `true`면 1회만 실행 |
-| `LOG_FILE` | `bithumb_monitor.log` | 로그 파일 경로 |
+| `LOG_FILE` | `bithumb_alert_bot.log` | 로그 파일 경로 |
 | `API_TIMEOUT` | `10` | 빗썸 API 타임아웃(초) |
 | `WEBHOOK_TIMEOUT` | `10` | Discord 요청 타임아웃(초) |
 | `API_DELAY` | `0.1` | 종목 간 API 호출 지연(초) |
