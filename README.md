@@ -26,8 +26,10 @@ graph TD
 - 종목별 캔들 조회 후 거래량 스파이크 계산
 - 기본 룰: `current_volume >= SMA(sma_period) * volume_multiplier`
 - Discord Embed 알림(거래량/배수/현재가/시간)
-- 중복 알림 방지(메모리 Set)
+- 중복 알림 방지(메모리 Set + 파일 캐시 동기화)
 - 옵션으로 알림 캐시 주기적 리셋(`ALERT_RESET_HOURS`)
+- 저유동성 필터(`MIN_KRW_VOLUME`)로 노이즈 알림 감소
+- API 재시도 + 지수 백오프(+jitter) 적용
 
 ---
 
@@ -78,6 +80,10 @@ nohup python main.py > monitor.log 2>&1 &
 | `WEBHOOK_TIMEOUT` | `10` | Discord 요청 타임아웃(초) |
 | `API_DELAY` | `0.1` | 종목 간 API 호출 지연(초) |
 | `ALERT_RESET_HOURS` | `None` | 중복알림 캐시 리셋 주기(시간) |
+| `SEND_STARTUP_TEST` | `false` | 연속 모드 시작 시 테스트 메시지 전송 여부 |
+| `ALERT_CACHE_FILE` | `alerted_symbols_cache.json` | 중복알림 캐시 파일 경로 |
+| `MIN_KRW_VOLUME` | `0` | 최소 거래대금(원) 미만 종목 필터링 |
+| `API_MAX_RETRIES` | `2` | 빗썸 API 실패 시 재시도 횟수 |
 
 > `env.example`에는 `CHECK_INTERVAL=60`, `ALERT_RESET_HOURS=24` 예시가 들어있습니다.
 
@@ -85,9 +91,9 @@ nohup python main.py > monitor.log 2>&1 &
 
 ## 동작 메모
 
-- 연속 모드에서 시작 시 테스트 메시지 1회를 보냅니다.
-- 프로세스 재시작 시 중복알림 캐시는 초기화됩니다(메모리 기반).
-- 네트워크/요청 오류 발생 시 로그를 남기고 다음 사이클에서 재시도합니다.
+- 연속 모드 시작 테스트 메시지는 `SEND_STARTUP_TEST=true`일 때만 전송됩니다.
+- 중복알림 캐시는 `ALERT_CACHE_FILE`에 저장되어, 프로세스 재시작 후에도 복원됩니다.
+- 네트워크/요청 오류 발생 시 재시도 후 실패하면 지수 백오프로 다음 루프를 지연합니다.
 
 ---
 
