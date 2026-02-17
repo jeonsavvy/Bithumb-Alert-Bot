@@ -1,116 +1,103 @@
-# Bithumb Volume
+# Bithumb Volume Alert
 
-<div align="center">
-  <img src="./assets/screenshots/demo.png" alt="Project Demo" width="100%" />
-  
-  <br />
-
-  <img src="https://img.shields.io/badge/Python-3.8-3776AB?style=flat-square&logo=python&logoColor=white" />
-  <img src="https://img.shields.io/badge/Bithumb-API-F7931A?style=flat-square&logo=bitcoin&logoColor=white" />
-  <img src="https://img.shields.io/badge/Discord-Webhook-5865F2?style=flat-square&logo=discord&logoColor=white" />
-</div>
-
-<br />
-
-**Bithumb Volume**은 **빗썸 API**와 **이동평균(SMA) 기반 이상 탐지 알고리즘**을 활용한 실시간 가상화폐 거래량 모니터링 시스템입니다.
-전체 마켓을 스캔하여 통계적 임계치를 초과하는 거래량 급증이 발생할 경우, Discord Webhook을 통해 실시간 알림을 전송합니다.
+빗썸 KRW 마켓을 순회하면서 캔들 거래량이 평균 대비 급증한 종목을 Discord로 알리는 Python 모니터입니다.
 
 ---
 
-## 🛠 Features
-
-*   **Market-Wide Scanning**: 빗썸 KRW 마켓의 모든 암호화폐를 주기적으로 스캔하여 사각지대 없는 모니터링 제공
-*   **Anomaly Detection**: `현재 거래량 > SMA(20) * 5.0` 등 통계적 규칙 기반으로 유의미한 거래량 폭발 포착
-*   **Real-time Alert**: 티커, 급등 배수(Multiplier), 평균 거래량 정보를 포함한 리포트를 Discord로 즉시 전송
-*   **Robust Polling**: API Rate Limit을 준수하며, 에러 발생 시 자동 복구되는 견고한 폴링 아키텍처
-*   **Configurable Strategy**: SMA 기간, 감지 민감도(Multiplier), 캔들 간격을 환경변수로 유연하게 조정 가능
-
----
-
-## 🏗 Architecture
+## 핵심 흐름
 
 ```mermaid
 graph TD
-    Market([Bithumb Market]) -->|Public API| Poller[Python Poller]
-    
-    subgraph "Detection Engine"
-        Poller -->|Fetch Candles| Analyzer[Statistical Analyzer]
-        Analyzer -->|Calculate SMA| Logic{Is Spike?}
-    end
-    
-    Logic --"Yes (Multiplier > 5.0)"--> Notifier[Discord Webhook]
-    Logic --"No"--> Sleep[Wait & Retry]
-    
-    Notifier -->|Alert| Admin([User/Discord])
+    A[Get KRW Symbols] --> B[Fetch Candles]
+    B --> C[Calculate SMA]
+    C --> D{Volume Spike?}
+    D -->|Yes| E[Send Discord Embed]
+    D -->|No| F[Skip]
+    E --> G[Track alerted symbol]
+    G --> H[Wait next cycle]
+    F --> H
 ```
 
 ---
 
-## 📦 Tech Stack
+## 현재 구현 기능
 
-| Category | Technology |
-| :--- | :--- |
-| **Language** | Python 3.8+ |
-| **Data Source** | Bithumb Public API |
-| **Analysis** | Statistics, Math (Standard Lib) |
-| **Notification** | Discord Webhook |
-| **DevOps** | Nohup (Background Process) |
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-*   Python 3.8+
-*   Discord Webhook URL
-
-### Installation
-
-1.  **Repository Clone**
-    ```bash
-    git clone https://github.com/jeonsavvy/Bithumb-Volume-Monitor.git
-    cd Bithumb-Volume-Monitor
-    ```
-
-2.  **Virtual Environment (Optional)**
-    ```bash
-    python -m venv venv
-    
-    # Windows
-    venv\Scripts\activate
-    # macOS/Linux
-    source venv/bin/activate
-    ```
-
-3.  **Dependencies Install**
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-4.  **Environment Setup**
-    `env.example`을 복사하여 `.env` 파일을 생성합니다.
-    ```env
-    DISCORD_WEBHOOK_URL=your_webhook_url
-    CHECK_INTERVAL=60       # 폴링 주기 (초)
-    VOLUME_MULTIPLIER=5.0   # 감지 임계값 (배수)
-    ```
-
-5.  **Run Monitor**
-    ```bash
-    # Foreground
-    python main.py
-    
-    # Background (Linux/Mac)
-    nohup python main.py > monitor.log 2>&1 &
-    ```
+- KRW 마켓 전체 종목 조회 (`ticker/ALL_KRW`)
+- 종목별 캔들 조회 후 거래량 스파이크 계산
+- 기본 룰: `current_volume >= SMA(sma_period) * volume_multiplier`
+- Discord Embed 알림(거래량/배수/현재가/시간)
+- 중복 알림 방지(메모리 Set)
+- 옵션으로 알림 캐시 주기적 리셋(`ALERT_RESET_HOURS`)
 
 ---
 
-## 📂 Directory Structure
+## 빠른 시작
+
+### 1) 설치
 
 ```bash
-├── main.py              # Main Entry Point & Logic
-├── env.example          # Env Template
-├── requirements.txt     # Dependencies
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 2) 환경 변수
+
+```bash
+cp env.example .env
+```
+
+`DISCORD_WEBHOOK_URL`을 실제 값으로 바꿔주세요.
+
+### 3) 실행
+
+```bash
+python main.py
+```
+
+백그라운드 실행 예시:
+
+```bash
+nohup python main.py > monitor.log 2>&1 &
+```
+
+---
+
+## 설정값
+
+| 변수 | 기본값(코드 기준) | 설명 |
+|---|---:|---|
+| `DISCORD_WEBHOOK_URL` | (필수) | Discord Webhook URL |
+| `CHECK_INTERVAL` | `300` | 모니터링 주기(초) |
+| `VOLUME_MULTIPLIER` | `5.0` | 스파이크 배수 임계값 |
+| `SMA_PERIOD` | `20` | 거래량 SMA 기간 |
+| `CANDLE_INTERVAL` | `5m` | 캔들 간격 (`1m,3m,5m,15m,30m,1h,4h,1d`) |
+| `RUN_ONCE` | `false` | `true`면 1회만 실행 |
+| `LOG_FILE` | `bithumb_monitor.log` | 로그 파일 경로 |
+| `API_TIMEOUT` | `10` | 빗썸 API 타임아웃(초) |
+| `WEBHOOK_TIMEOUT` | `10` | Discord 요청 타임아웃(초) |
+| `API_DELAY` | `0.1` | 종목 간 API 호출 지연(초) |
+| `ALERT_RESET_HOURS` | `None` | 중복알림 캐시 리셋 주기(시간) |
+
+> `env.example`에는 `CHECK_INTERVAL=60`, `ALERT_RESET_HOURS=24` 예시가 들어있습니다.
+
+---
+
+## 동작 메모
+
+- 연속 모드에서 시작 시 테스트 메시지 1회를 보냅니다.
+- 프로세스 재시작 시 중복알림 캐시는 초기화됩니다(메모리 기반).
+- 네트워크/요청 오류 발생 시 로그를 남기고 다음 사이클에서 재시도합니다.
+
+---
+
+## 파일 구조
+
+```bash
+├── main.py
+├── bithumb_api.py
+├── discord_webhook.py
+├── env.example
+├── requirements.txt
 └── README.md
 ```
