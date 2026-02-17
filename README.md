@@ -8,13 +8,13 @@
 
 ```mermaid
 graph TD
-    A[Get KRW Symbols] --> B[Fetch Candles]
-    B --> C[Calculate SMA]
-    C --> D{Volume Spike?}
-    D -->|Yes| E[Send Discord Embed]
-    D -->|No| F[Skip]
-    E --> G[Track alerted symbol]
-    G --> H[Wait next cycle]
+    A["Get KRW Symbols"] --> B["Fetch Candles"]
+    B --> C["Calculate SMA"]
+    C --> D{"Volume Spike?"}
+    D -->|"Yes"| E["Send Discord Embed"]
+    D -->|"No"| F["Skip"]
+    E --> G["Track alerted symbol"]
+    G --> H["Wait next cycle"]
     F --> H
 ```
 
