@@ -8,3 +8,11 @@ __pycache__/
 
 # 로그 파일
 *.log
+node_modules
+dist
+build
+.next
+.DS_Store
+Thumbs.db
+venv
+.venv
